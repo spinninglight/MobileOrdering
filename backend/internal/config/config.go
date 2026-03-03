@@ -2,38 +2,53 @@ package config
 
 import (
 	"log"
-	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/kelseyhightower/envconfig"
 )
 
-type Config struct {
-	WxAppID     string
-	WxAppSecret string
-	JWTSecret   string
-	ServerPort  string
+type AppConfig struct {
+    Server ServerConfig   `envconfig:"SERVER"`
+    DB     DatabaseConfig `envconfig:"DB"`
+    Wx     WechatConfig   `envconfig:"WX"`
+    Jwt    JwtConfig      `envconfig:"JWT"`
 }
 
-var Cfg *Config
+type WechatConfig struct {
+    // 最终匹配: APP_WX_APP_ID
+    AppID     string `envconfig:"APP_ID" required:"true"`
+    // 最终匹配: APP_WX_APP_SECRET
+    AppSecret string `envconfig:"APP_SECRET" required:"true"`  
+}
+
+type JwtConfig struct {
+    // 最终匹配: APP_JWT_SECRET
+    Secret    string `envconfig:"SECRET" required:"true"`
+}
+
+type ServerConfig struct {
+    // 最终匹配: APP_SERVER_PORT
+    Port      string `envconfig:"PORT" default:":8080"`
+}
+
+type DatabaseConfig struct {
+	
+}
+
+var Cfg *AppConfig
 
 func Init() {
-	// 加载 .env 文件 (如果存在)
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using system environment variables")
+	// 1. 尝试加载 .env 文件（本地开发利器）
+	// 不直接检查 error，因为在生产环境（如 Docker）通常不需要 .env 文件
+	_ = godotenv.Load()
+
+	// 2. 实例化并解析环境变量
+	var c AppConfig
+	// 注意：如果你的变量名没有统一前缀（如 APP_），第一个参数传空字符串 ""
+	if err := envconfig.Process("APP", &c); err != nil {
+		log.Fatalf("❌ 无法加载配置: %v", err)
 	}
 
-	Cfg = &Config{
-		WxAppID:     os.Getenv("WX_APP_ID"),
-		WxAppSecret: os.Getenv("WX_APP_SECRET"),
-		JWTSecret:   os.Getenv("JWT_SECRET"),
-		ServerPort:  os.Getenv("SERVER_PORT"),
-	}
-
-	if Cfg.ServerPort == "" {
-		Cfg.ServerPort = ":8080"
-	}
-
-	if Cfg.WxAppID == "" || Cfg.WxAppSecret == "" {
-		log.Fatal("FATAL: WX_APP_ID and WX_APP_SECRET must be set in environment variables")
-	}
+	Cfg = &c
+	log.Println("✅ 配置加载成功")
 }

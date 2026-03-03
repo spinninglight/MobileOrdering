@@ -28,8 +28,8 @@ func NewWeChatService() *WeChatService {
 // GetSessionInfo 调用微信 jscode2session 接口
 func (s *WeChatService) GetSessionInfo(code string) (*model.WeChatSessionResp, error) {
 	params := url.Values{}
-	params.Add("appid", config.Cfg.WxAppID)
-	params.Add("secret", config.Cfg.WxAppSecret)
+	params.Add("appid", config.Cfg.Wx.AppID)
+	params.Add("secret", config.Cfg.Wx.AppSecret)
 	params.Add("js_code", code)
 	params.Add("grant_type", "authorization_code")
 
@@ -71,7 +71,7 @@ func (s *WeChatService) GenerateToken(openID, sessionKey string) (string, error)
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(config.Cfg.JWTSecret))
+	tokenString, err := token.SignedString([]byte(config.Cfg.Jwt.Secret))
 	if err != nil {
 		return "", err
 	}

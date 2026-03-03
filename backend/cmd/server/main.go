@@ -5,27 +5,16 @@ import (
 	"net/http"
 
 	"mobileordering/internal/config"
-	"mobileordering/internal/handler"
 )
 
 func main() {
 	// 1. 初始化配置
 	config.Init()
 
-	// 2. 注册路由
-	loginHandler := handler.NewLoginHandler()
-
-	http.HandleFunc("/api/login", loginHandler.ServeHTTP)
-
-	// 健康检查接口
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
-	})
-
 	// 3. 启动服务
-	addr := config.Cfg.ServerPort
+	addr := config.Cfg.Server.Port
 	log.Printf("Starting server on %s...", addr)
-	log.Printf("AppID configured: %s...", maskString(config.Cfg.WxAppID))
+	log.Printf("AppID configured: %s...", maskString(config.Cfg.Wx.AppID))
 
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
