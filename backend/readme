@@ -1,0 +1,12 @@
+### 后端部署
+go mod init mobileordering
+go mod tidy
+go run cmd/server/main.go
+
+### 数据库
+## 创建数据库
+CREATE DATABASE order_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+  

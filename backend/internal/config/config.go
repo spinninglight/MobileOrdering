@@ -32,7 +32,16 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	
+    // 最终环境变量名: APP_DB_HOST
+    Host     string `envconfig:"HOST" default:"127.0.0.1"`
+    // 最终环境变量名: APP_DB_PORT
+    Port     string `envconfig:"PORT" default:"3306"`
+    // 最终环境变量名: APP_DB_USER
+    User     string `envconfig:"USER" required:"true"`
+    // 最终环境变量名: APP_DB_PASSWORD
+    Password string `envconfig:"PASSWORD" required:"true"`
+    // 最终环境变量名: APP_DB_NAME
+    Name     string `envconfig:"NAME" required:"true"`
 }
 
 var Cfg *AppConfig
