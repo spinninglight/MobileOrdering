@@ -12,6 +12,7 @@ type AppConfig struct {
     DB     DatabaseConfig `envconfig:"DB"`
     Wx     WechatConfig   `envconfig:"WX"`
     Jwt    JwtConfig      `envconfig:"JWT"`
+    Env    string         `envconfig:"ENV"`
 }
 
 type WechatConfig struct {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"mobileordering/internal/config"
+	"mobileordering/internal/model"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -41,6 +42,11 @@ func InitDB(cfg *config.DatabaseConfig) {
 	sqlDB.SetMaxIdleConns(10)           // 最大空闲连接数
 	sqlDB.SetMaxOpenConns(100)          // 最大打开连接数
 	sqlDB.SetConnMaxLifetime(time.Hour) // 连接可复用的最大时间
+
+	if config.Cfg.Env == "dev" {
+    	DB.AutoMigrate(&model.Category{},&model.Product{},&model.ProductSKU{},&model.ProductAttribute{})
+		log.Println("✅ 数据库自动匹配model")
+	}
 
 	log.Println("✅ 数据库连接成功")
 }

@@ -7,6 +7,8 @@ import (
 	"github.com/gin-contrib/cors"
 	"mobileordering/internal/handler"
 	"mobileordering/internal/service"
+	"mobileordering/internal/repository"
+	"mobileordering/internal/database"
 )
 
 func NewRouter() *gin.Engine {
@@ -15,10 +17,15 @@ func NewRouter() *gin.Engine {
 
 	r.Use(cors.Default())
 
-	menuservice := service.NewMenuService()
+	menuRepository := repository.NewMenuRepository(database.DB)
+	productRepository := repository.NewProductRepository(database.DB)
+
+	menuService := service.NewMenuService(menuRepository)
+	productService := service.NewProductService(productRepository)
 
 	loginHandler := handler.NewLoginHandler()
-	menuHandler := handler.NewMenuHandler(menuservice)
+	menuHandler := handler.NewMenuHandler(menuService)
+	productHandler := handler.NewProductHandler(productService)
 
 	api := r.Group("/api")
 
@@ -29,7 +36,12 @@ func NewRouter() *gin.Engine {
 
 	merchant := v1.Group("merchant")
 	{
-		merchant.GET("/merchant/:id/menu", menuHandler.GetMerchantMenu)
+		merchant.GET("/:id/menu", menuHandler.GetMerchantMenu)
+	}
+
+	products := v1.Group("products")
+	{
+		products.GET("/:product_id/details", productHandler.GetProductDetails)
 	}
 
 	r.GET("/health", func(c *gin.Context) {
