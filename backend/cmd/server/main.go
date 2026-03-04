@@ -2,25 +2,30 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"mobileordering/internal/config"
 	"mobileordering/internal/database"
+	"mobileordering/internal/router"
 )
 
 func main() {
-	// 1. 初始化配置
+
+	// 1️⃣ 初始化配置
 	config.Init()
 
-	// 2. 连接数据库
+	// 2️⃣ 初始化数据库
 	database.InitDB(&config.Cfg.DB)
 
-	// 3. 启动服务
+	// 3️⃣ 初始化路由
+	r := router.NewRouter()
+
 	addr := config.Cfg.Server.Port
+
 	log.Printf("Starting server on %s...", addr)
 	log.Printf("AppID configured: %s...", maskString(config.Cfg.Wx.AppID))
 
-	if err := http.ListenAndServe(addr, nil); err != nil {
+	// 4️⃣ 启动 Gin 服务
+	if err := r.Run(addr); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }

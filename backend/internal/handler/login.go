@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"mobileordering/internal/model"
 	"mobileordering/internal/service"
 )
@@ -18,63 +18,49 @@ func NewLoginHandler() *LoginHandler {
 	}
 }
 
-func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// 设置 CORS (开发环境可能需要，生产环境建议配置 Nginx)
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+// Gin 版本登录接口
+func (h *LoginHandler) Login(c *gin.Context) {
 
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	if r.Method != http.MethodPost {
-		sendJSON(w, http.StatusMethodNotAllowed, model.ErrorResponse{Error: "Method not allowed"})
-		return
-	}
-
-	// 1. 解析请求
+	// 1️⃣ 解析请求 JSON
 	var req model.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendJSON(w, http.StatusBadRequest, model.ErrorResponse{Error: "Invalid JSON format"})
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, model.ErrorResponse{
+			Error: "Invalid JSON format",
+		})
 		return
 	}
 
 	if req.Code == "" {
-		sendJSON(w, http.StatusBadRequest, model.ErrorResponse{Error: "Code is required"})
+		c.JSON(http.StatusBadRequest, model.ErrorResponse{
+			Error: "Code is required",
+		})
 		return
 	}
 
-	// 2. 调用微信服务
+	// 2️⃣ 调用微信服务
 	wxResp, err := h.wechatSvc.GetSessionInfo(req.Code)
 	if err != nil {
-		// 记录详细错误日志，返回通用错误给前端
-		// log.Printf("WeChat login failed: %v", err)
-		sendJSON(w, http.StatusInternalServerError, model.ErrorResponse{Error: "Login failed: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
+			Error: "Login failed",
+		})
 		return
 	}
 
-	// 3. 生成业务 Token
+	// 3️⃣ 生成业务 Token
 	token, err := h.wechatSvc.GenerateToken(wxResp.OpenID, wxResp.SessionKey)
 	if err != nil {
-		sendJSON(w, http.StatusInternalServerError, model.ErrorResponse{Error: "Token generation failed"})
+		c.JSON(http.StatusInternalServerError, model.ErrorResponse{
+			Error: "Token generation failed",
+		})
 		return
 	}
 
-	// 4. 返回成功响应
-	// 注意：绝对不要返回 session_key 给前端！
+	// 4️⃣ 返回响应（绝不返回 session_key）
 	response := model.LoginResponse{
 		Token:   token,
-		OpenID:  wxResp.OpenID, // 可选返回
+		OpenID:  wxResp.OpenID,
 		Message: "Login successful",
 	}
 
-	sendJSON(w, http.StatusOK, response)
-}
-
-func sendJSON(w http.ResponseWriter, status int, data interface{}) {
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
+	c.JSON(http.StatusOK, response)
 }

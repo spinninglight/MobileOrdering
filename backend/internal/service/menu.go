@@ -10,8 +10,8 @@ type MenuService struct {
 	Repo *repository.MenuRepository
 }
 
-func NewMenuService(repo *repository.MenuRepository) *MenuService {
-	return &MenuService{Repo: repo}
+func NewMenuService() *MenuService {
+	return &MenuService{}
 }
 
 func (s *MenuService) GetMerchantMenu(merchantID int64) ([]model.Category, error) {

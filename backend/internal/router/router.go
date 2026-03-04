@@ -2,26 +2,39 @@ package router
 
 import (
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	"mobileordering/internal/handler"
+	"mobileordering/internal/service"
 )
 
-// NewRouter 返回配置好的 http.Handler
-func NewRouter() http.Handler {
-	// 1. 创建 ServeMux (路由器)
-	mux := http.NewServeMux()
+func NewRouter() *gin.Engine {
 
-	// 2. 实例化 Handler
+	r := gin.Default()
+
+	r.Use(cors.Default())
+
+	menuservice := service.NewMenuService()
+
 	loginHandler := handler.NewLoginHandler()
+	menuHandler := handler.NewMenuHandler(menuservice)
 
-	// 3. 注册业务路由
-	mux.HandleFunc("/api/login", loginHandler.ServeHTTP)
+	api := r.Group("/api")
 
-	// 4. 注册系统路由 (健康检查)
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
+	v1 := api.Group("v1")
+	{
+		v1.POST("/login", loginHandler.Login)
+	}
+
+	merchant := v1.Group("merchant")
+	{
+		merchant.GET("/merchant/:id/menu", menuHandler.GetMerchantMenu)
+	}
+
+	r.GET("/health", func(c *gin.Context) {
+		c.String(http.StatusOK, "OK")
 	})
 
-	// 注册商品展示路由
-
-	return mux
+	return r
 }
