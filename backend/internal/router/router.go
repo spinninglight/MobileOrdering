@@ -21,5 +21,7 @@ func NewRouter() http.Handler {
 		w.Write([]byte("OK"))
 	})
 
+	// 注册商品展示路由
+
 	return mux
 }
