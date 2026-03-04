@@ -5,11 +5,15 @@ import (
 	"net/http"
 
 	"mobileordering/internal/config"
+	"mobileordering/internal/database"
 )
 
 func main() {
 	// 1. 初始化配置
 	config.Init()
+
+	// 2. 连接数据库
+	database.InitDB(&config.Cfg.DB)
 
 	// 3. 启动服务
 	addr := config.Cfg.Server.Port
