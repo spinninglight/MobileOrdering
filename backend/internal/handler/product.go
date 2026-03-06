@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"mobileordering/internal/service"
+	"mobileordering/internal/model/response"
 )
 
 type ProductHandler struct {
@@ -38,9 +39,5 @@ func (h *ProductHandler) GetProductDetails(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"msg":  "success",
-		"data": data,
-	})
+	response.Success(c,data)	
 }

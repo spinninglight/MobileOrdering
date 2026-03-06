@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"mobileordering/internal/service"
+	"mobileordering/internal/model/response"
 )
 
 type MenuHandler struct {
@@ -32,7 +33,7 @@ func (h *MenuHandler) GetMerchantMenu(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	response.Success(c, gin.H{
 		"merchant_id": merchantID,
 		"categories":  data,
 	})

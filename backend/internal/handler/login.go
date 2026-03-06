@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"mobileordering/internal/model"
+	"mobileordering/internal/model/response"
 	"mobileordering/internal/service"
 )
 
@@ -55,12 +56,13 @@ func (h *LoginHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// 4️⃣ 返回响应（绝不返回 session_key）
-	response := model.LoginResponse{
-		Token:   token,
-		OpenID:  wxResp.OpenID,
-		Message: "Login successful",
+	// 只返回纯数据部分（不要包含 message/code）
+	loginData := model.LoginResponse{
+		Token:  token,
+		OpenID: wxResp.OpenID,
+		// 注意：不再需要 Message 字段！
 	}
 
-	c.JSON(http.StatusOK, response)
+	// 使用统一 Success 函数包装
+	response.Success(c, loginData)
 }
