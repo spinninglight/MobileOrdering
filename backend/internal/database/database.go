@@ -44,7 +44,7 @@ func InitDB(cfg *config.DatabaseConfig) {
 	sqlDB.SetConnMaxLifetime(time.Hour) // 连接可复用的最大时间
 
 	if config.Cfg.Env == "dev" {
-    	DB.AutoMigrate(&model.Category{},&model.Product{},&model.ProductSKU{},&model.ProductAttribute{})
+    	DB.AutoMigrate(&model.Category{},&model.Product{},&model.ProductSKU{},&model.ProductAttribute{},&model.Order{},&model.OrderItem{})
 		log.Println("✅ 数据库自动匹配model")
 	}
 

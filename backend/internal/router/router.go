@@ -27,6 +27,10 @@ func NewRouter() *gin.Engine {
 	menuHandler := handler.NewMenuHandler(menuService)
 	productHandler := handler.NewProductHandler(productService)
 
+	orderRepo := repository.NewOrderRepository(database.DB)
+	orderSvc := service.NewOrderService(orderRepo,productRepository)
+	orderHandler := handler.NewOrderHandler(orderSvc)
+
 	api := r.Group("/api")
 
 	v1 := api.Group("v1")
@@ -42,6 +46,11 @@ func NewRouter() *gin.Engine {
 	products := v1.Group("products")
 	{
 		products.GET("/:product_id/details", productHandler.GetProductDetails)
+	}
+
+	order := v1.Group("order")
+	{
+		order.POST("/create",orderHandler.CreateOrder)
 	}
 
 	r.GET("/health", func(c *gin.Context) {
