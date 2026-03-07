@@ -1,0 +1,45 @@
+services:
+  mysql-db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: order_db
+      MYSQL_ROOT_PASSWORD: 123456
+    # 健康检查确保 MySQL 真正就绪
+    volumes:
+      - ./db/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./db/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s # 给数据库 10 秒的初始启动宽限期
+
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      # --- 基础配置 ---
+      - APP_ENV=production
+      - APP_SERVER_PORT=:8080
+
+      # --- 数据库配置 (注意 Host 要写服务名 mysql-db) ---
+      - APP_DB_HOST=mysql-db
+      - APP_DB_PORT=3306
+      - APP_DB_USER=root
+      - APP_DB_PASSWORD=123456
+      - APP_DB_NAME=order_db
+
+      # --- 微信配置 ---
+      - APP_WX_APP_ID=your_wx_id
+      - APP_WX_APP_SECRET=your_wx_secret
+
+      # --- JWT 配置 ---
+      - APP_JWT_SECRET=your_super_secret_key

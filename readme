@@ -1,0 +1,9 @@
+##docker构建
+在根目录下面执行构建并启动容器
+docker compose up --build
+可能会遇到数据库连接失败的情况
+使用ctrl + c 停止容器运行
+再执行以启动容器
+docker compose up -d  
+执行以下命令查看日志
+docker compose logs -f   
