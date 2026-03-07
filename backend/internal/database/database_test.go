@@ -6,6 +6,9 @@ import (
 )
 
 func TestInitDB(t *testing.T) {
+	config.Cfg = &config.AppConfig{
+        Env: "test",
+    }
 	// 1. 手动构造一个测试用的配置（或者调用 config.Init() 加载 .env）
 	// 注意：确保这里的账号密码在你本地 MySQL 是真实存在的
 	testCfg := &config.DatabaseConfig{

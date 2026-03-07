@@ -27,17 +27,27 @@ func InitDB(cfg *config.DatabaseConfig) {
 	)
 
 	var err error
-	DB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
 		log.Fatalf("❌ 数据库连接失败: %v", err)
 	}
 
+	if DB == nil {
+		log.Fatal("数据库连接成功但 DB 实例为 nil")
+		return
+	}
 	// 获取底层 sql.DB 以配置连接池
 	sqlDB, err := DB.DB()
 	if err != nil {
 		log.Fatalf("❌ 获取底层 SQL 对象失败: %v", err)
+		return 
+	}
+
+	if sqlDB == nil {
+		log.Fatal("数据库连接成功但 sqlDB 实例为 nil")
+		return 
 	}
 
 	// 设置连接池参数
