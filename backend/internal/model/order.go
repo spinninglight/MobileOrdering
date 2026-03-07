@@ -5,7 +5,7 @@ import "time"
 // Order 订单主模型
 type Order struct {
 	ID          int64    `gorm:"primaryKey;column:id" json:"id"`
-	OrderSn     string    `gorm:"column:order_sn;uniqueIndex" json:"order_sn"`
+	OrderSn     string    `gorm:"column:order_sn;type:varchar(64);not null;uniqueIndex" json:"order_sn"`
 	ShopID      int64    `gorm:"column:shop_id;index" json:"shop_id"` // 新增：店铺ID
 	UserID      int64    `gorm:"column:user_id;index" json:"user_id"`
 	TotalAmount float64   `gorm:"column:total_amount" json:"total_amount"`
