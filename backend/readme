@@ -9,4 +9,5 @@ CREATE DATABASE order_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-  
+### git合并commit
+git rebase -i HEAD~4  

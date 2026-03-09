@@ -45,6 +45,19 @@ type DatabaseConfig struct {
     Name     string `envconfig:"NAME" required:"true"`
 }
 
+// RedisConfig 用于定义 Redis 初始化配置
+type RedisConfig struct {
+    // 最终环境变量名示例: APP_REDIS_HOST
+    Host     string `envconfig:"HOST" default:"127.0.0.1"`
+    // 最终环境变量名示例: APP_REDIS_PORT
+    Port     int    `envconfig:"PORT" default:"6379"`
+    // 最终环境变量名示例: APP_REDIS_PASSWORD
+    Password string `envconfig:"PASSWORD"`
+    // 最终环境变量名示例: APP_REDIS_DB
+    DB       int    `envconfig:"DB" default:"0"`
+    // 最终环境变量名示例: APP_REDIS_POOL_SIZE
+    PoolSize int    `envconfig:"POOL_SIZE" default:"10"`
+}
 var Cfg *AppConfig
 
 func Init() {
