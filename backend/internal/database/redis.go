@@ -5,24 +5,15 @@ import (
 	"fmt"
 	"log"
 	"time"
-
+	"mobileordering/internal/config"
 	"github.com/redis/go-redis/v9"
 )
 
 // RedisClient 声明一个全局变量，方便外部调用（或者通过依赖注入传递）
 var RedisClient *redis.Client
 
-// RedisConfig 用于定义初始化配置
-type RedisConfig struct {
-	Host     string
-	Port     int
-	Password string
-	DB       int
-	PoolSize int
-}
-
 // InitRedis 初始化 Redis 连接
-func InitRedis(cfg *RedisConfig) error {
+func InitRedis(cfg *config.RedisConfig) error {
 	// 1. 创建 Redis 选项
 	opts := &redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
