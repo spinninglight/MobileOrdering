@@ -13,6 +13,7 @@ type AppConfig struct {
     Wx     WechatConfig   `envconfig:"WX"`
     Jwt    JwtConfig      `envconfig:"JWT"`
     Env    string         `envconfig:"ENV"`
+    Redis  RedisConfig    `envconfig:"REDIS"`
 }
 
 type WechatConfig struct {

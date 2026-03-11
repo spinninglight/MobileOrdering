@@ -15,6 +15,12 @@ func main() {
 
 	// 2️⃣ 初始化数据库
 	database.InitDB(&config.Cfg.DB)
+	database.InitRedis(&config.Cfg.Redis)
+
+	// 在这里调用关闭函数（假设你的 database 包暴露了 CloseRedis）
+    defer func() {
+        database.CloseRedis()
+    }()
 
 	// 3️⃣ 初始化路由
 	r := router.NewRouter()

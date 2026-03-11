@@ -7,6 +7,7 @@ import (
 	"time"
 	"mobileordering/internal/config"
 	"github.com/redis/go-redis/v9"
+	"encoding/json"
 )
 
 // RedisClient 声明一个全局变量，方便外部调用（或者通过依赖注入传递）
@@ -53,4 +54,24 @@ func CloseRedis() {
 			log.Printf("❌ 关闭 Redis 连接时出错: %v", err)
 		}
 	}
+}
+
+func SetJSON(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
+    data, err := json.Marshal(value)
+    if err != nil {
+        return err
+    }
+    return RedisClient.Set(ctx, key, data, expiration).Err()
+}
+
+func GetJSON(ctx context.Context, key string, dest interface{}) (bool, error) {
+    data, err := RedisClient.Get(ctx, key).Bytes()
+    if err == redis.Nil {
+        return false, nil // 缓存不存在
+    }
+    if err != nil {
+        return false, err
+    }
+    err = json.Unmarshal(data, dest)
+    return true, err
 }
