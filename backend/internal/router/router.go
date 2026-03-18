@@ -51,6 +51,9 @@ func NewRouter() *gin.Engine {
 	order := v1.Group("order")
 	{
 		order.POST("/create",orderHandler.CreateOrder)
+		order.POST("/pending",orderHandler.GetPendingOrders)
+		order.POST("/accept",orderHandler.AcceptOrder)
+		order.POST("/reject",orderHandler.RejectOrder)
 	}
 
 	r.GET("/health", func(c *gin.Context) {
