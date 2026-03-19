@@ -6,6 +6,7 @@ import (
 	"mobileordering/internal/config"
 	"mobileordering/internal/database"
 	"mobileordering/internal/router"
+	"mobileordering/internal/utils"
 )
 
 func main() {
@@ -16,6 +17,9 @@ func main() {
 	// 2️⃣ 初始化数据库
 	database.InitDB(&config.Cfg.DB)
 	database.InitRedis(&config.Cfg.Redis)
+
+	// 初始化JWT中间件
+	jwt.Init(config.Cfg.Jwt.Secret)
 
 	// 在这里调用关闭函数（假设你的 database 包暴露了 CloseRedis）
     defer func() {
