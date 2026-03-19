@@ -7,3 +7,9 @@ docker compose up --build
 docker compose up -d  
 执行以下命令查看日志
 docker compose logs -f   
+
+##前端测试
+把token放在auth里面的Bearer Token
+
+##数据库
+use order_db;

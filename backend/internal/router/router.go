@@ -9,6 +9,7 @@ import (
 	"mobileordering/internal/service"
 	"mobileordering/internal/repository"
 	"mobileordering/internal/database"
+	"mobileordering/internal/middleware"
 )
 
 func NewRouter() *gin.Engine {
@@ -37,11 +38,22 @@ func NewRouter() *gin.Engine {
 	{
 		v1.POST("/login", loginHandler.Login)
 	}
-
+	///api/v1/merchant/
 	merchant := v1.Group("merchant")
 	{
 		merchant.GET("/:id/menu", menuHandler.GetMerchantMenu)
+		merchant.POST("/login", loginHandler.MerchantLogin)
 	}
+
+	// 私有接口：需要验证 Token
+    private := merchant.Group("")
+    private.Use(middleware.MerchantAuth()) // 挂载我们写的中间件
+    {
+        // 当请求到达这里时，中间件已经把 shop_id 塞进 context 了！
+        private.GET("/orders/pending", orderHandler.GetPendingOrders)
+        private.POST("/orders/accept", orderHandler.AcceptOrder)
+        private.POST("/orders/reject", orderHandler.RejectOrder)
+    }
 
 	products := v1.Group("products")
 	{

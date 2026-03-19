@@ -99,9 +99,9 @@ func (s *OrderService) GetPendingOrders(ctx context.Context, shopID int64, page,
 }
 
 // AcceptOrder 商家接单
-func (s *OrderService) AcceptOrder(ctx context.Context, shopID int64, orderID int64) error {
+func (s *OrderService) AcceptOrder(ctx context.Context, shopID int64, orderID string) error {
     // 1. 获取订单详情并校验归属权
-    order, _, err := s.orderRepo.GetOrderWithItems(ctx, uint64(orderID))
+    order, _, err := s.orderRepo.GetOrderWithItems(ctx, orderID)
     if err != nil {
         return fmt.Errorf("订单不存在")
     }
@@ -113,7 +113,7 @@ func (s *OrderService) AcceptOrder(ctx context.Context, shopID int64, orderID in
 
     // 2. 状态流转校验：只有已支付(1)的订单才能变为制作中(2)
     // 使用 Repository 层的 CAS 更新，防止多终端并发操作
-    success, err := s.orderRepo.UpdateOrderStatus(ctx, uint64(orderID), 1, 2)
+    success, err := s.orderRepo.UpdateOrderStatus(ctx, order.ID, 1, 2)
     if err != nil {
         return fmt.Errorf("更新订单状态失败: %w", err)
     }
@@ -128,9 +128,9 @@ func (s *OrderService) AcceptOrder(ctx context.Context, shopID int64, orderID in
 }
 
 // RejectOrder 商家拒单（包含状态变更与退款逻辑）
-func (s *OrderService) RejectOrder(ctx context.Context, shopID int64, orderID int64, reason string) error {
+func (s *OrderService) RejectOrder(ctx context.Context, shopID int64, orderID string, reason string) error {
     // 1. 获取并校验订单
-    order, _, err := s.orderRepo.GetOrderWithItems(ctx, uint64(orderID))
+    order, _, err := s.orderRepo.GetOrderWithItems(ctx, orderID)
     if err != nil {
         return fmt.Errorf("订单不存在")
     }
@@ -139,7 +139,7 @@ func (s *OrderService) RejectOrder(ctx context.Context, shopID int64, orderID in
     }
 
     // 2. 状态更新：从 已支付(1) 更新为 已取消(4)
-    success, err := s.orderRepo.UpdateOrderStatus(ctx, uint64(orderID), 1, 4)
+    success, err := s.orderRepo.UpdateOrderStatus(ctx, order.ID, 1, 4)
     if err != nil {
         return fmt.Errorf("取消订单失败: %w", err)
     }

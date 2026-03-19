@@ -7,6 +7,7 @@ import (
 	"mobileordering/internal/model"
 	"mobileordering/internal/model/response"
 	"mobileordering/internal/service"
+	"mobileordering/internal/utils"
 )
 
 type LoginHandler struct {
@@ -65,4 +66,40 @@ func (h *LoginHandler) Login(c *gin.Context) {
 
 	// 使用统一 Success 函数包装
 	response.Success(c, loginData)
+}
+
+
+// 假设你有这个结构体
+type MerchantLoginReq struct {
+    Username string `json:"username" binding:"required"`
+    Password string `json:"password" binding:"required"`
+}
+
+func (h *LoginHandler) MerchantLogin(c *gin.Context) {
+    var req MerchantLoginReq
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+        return
+    }
+
+    // 1. 调用 Service 验证账号密码，获取商户ID和店铺ID
+    // TODO: 这里需要你查数据库比对密码
+    // merchantID, shopID, err := h.merchantSvc.Verify(req.Username, req.Password)
+    
+    // 模拟验证成功获取到的数据：
+    merchantID := int64(1001) 
+    shopID := int64(1001)
+
+    // 2. 使用我们写好的 JWT 组件签发 Token
+    tokenString, err := jwt.GenerateMerchantToken(merchantID, shopID)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "生成凭证失败"})
+        return
+    }
+
+    // 3. 返回给前端
+    response.Success(c, gin.H{
+        "token":   tokenString,
+        "shop_id": shopID,
+    })
 }

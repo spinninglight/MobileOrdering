@@ -74,7 +74,7 @@ func (h *OrderHandler) GetPendingOrders(c *gin.Context) {
 // POST /merchant/orders/accept
 func (h *OrderHandler) AcceptOrder(c *gin.Context) {
     var req struct {
-        OrderID int64 `json:"order_id" binding:"required"`
+        OrderID string `json:"order_id" binding:"required"`
     }
     if err := c.ShouldBindJSON(&req); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
@@ -97,7 +97,7 @@ func (h *OrderHandler) AcceptOrder(c *gin.Context) {
 // POST /merchant/orders/reject
 func (h *OrderHandler) RejectOrder(c *gin.Context) {
     var req struct {
-        OrderID int64  `json:"order_id" binding:"required"`
+        OrderID string  `json:"order_id" binding:"required"`
         Reason  string `json:"reason" binding:"required"`
     }
     if err := c.ShouldBindJSON(&req); err != nil {

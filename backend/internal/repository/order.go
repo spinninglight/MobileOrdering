@@ -14,10 +14,10 @@ type OrderRepository interface {
     GetMerchantOrders(ctx context.Context, shopID uint64, status int8, page, pageSize int) ([]*model.Order, int64, error)
     
     // 2. 获取订单详情（包含 Items）
-    GetOrderWithItems(ctx context.Context, orderID uint64) (*model.Order, []*model.OrderItem, error)
+    GetOrderWithItems(ctx context.Context, orderID string) (*model.Order, []*model.OrderItem, error)
     
     // 3. 更新订单状态（带前置状态检查，防止重复接单）
-    UpdateOrderStatus(ctx context.Context, orderID uint64, oldStatus, newStatus int8) (bool, error)
+    UpdateOrderStatus(ctx context.Context, orderID int64, oldStatus, newStatus int8) (bool, error)
 }
 
 type orderRepo struct {
@@ -79,7 +79,7 @@ func (r *orderRepo) GetMerchantOrders(ctx context.Context, shopID uint64, status
 }
 
 // UpdateOrderStatus 更新状态（CAS 思想：乐观锁防止并发冲突）
-func (r *orderRepo) UpdateOrderStatus(ctx context.Context, orderID uint64, oldStatus, newStatus int8) (bool, error) {
+func (r *orderRepo) UpdateOrderStatus(ctx context.Context, orderID int64, oldStatus, newStatus int8) (bool, error) {
     // 只有当状态匹配 oldStatus 时才更新，防止两个店员同时点接单
     res := r.db.WithContext(ctx).Model(&model.Order{}).
         Where("id = ? AND status = ?", orderID, oldStatus).
@@ -94,19 +94,25 @@ func (r *orderRepo) UpdateOrderStatus(ctx context.Context, orderID uint64, oldSt
 }
 
 // GetOrderWithItems 获取详情（商家接单后需要知道做哪几个菜）
-func (r *orderRepo) GetOrderWithItems(ctx context.Context, orderID uint64) (*model.Order, []*model.OrderItem, error) {
+func (r *orderRepo) GetOrderWithItems(ctx context.Context, orderSN string) (*model.Order, []*model.OrderItem, error) {
     var order model.Order
     var items []*model.OrderItem
 
-    err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-        if err := tx.First(&order, orderID).Error; err != nil {
-            return err
-        }
-        if err := tx.Where("order_id = ?", orderID).Find(&items).Error; err != nil {
-            return err
-        }
-        return nil
-    })
+    // 1. 使用 Where 显式指定根据 order_sn 查询，避免 GORM 误判为主键 ID
+    // First 会自动加上 LIMIT 1
+    err := r.db.WithContext(ctx).
+        Where("order_sn = ?", orderSN). 
+        First(&order).Error
+    
+    if err != nil {
+        return nil, nil, err // 可能是 record not found
+    }
+
+    // 2. 根据查出来的订单自增 ID 去关联查询 items
+    // 注意：这里用 order.ID (int64) 比用字符串 order_sn 性能更高
+    err = r.db.WithContext(ctx).
+        Where("order_id = ?", order.ID). 
+        Find(&items).Error
 
     return &order, items, err
 }
